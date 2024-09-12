@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cadastrar Apólice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Cadastrar Apólice</h1>
+    </header>
+    <form method="post">
+        <label for="nr_apolice">Número da Apólice:</label>
+        <input type="text" id="nr_apolice" name="nr_apolice" required>
+        <label for="tipo_seguro">Tipo de Seguro:</label>
+        <input type="text" id="tipo_seguro" name="tipo_seguro" required>
+        <label for="dt_vencimento">Data de Vencimento:</label>
+        <input type="date" id="dt_vencimento" name="dt_vencimento" required>
+        <label for="seguradora">Seguradora:</label>
+        <input type="text" id="seguradora" name="seguradora" required>
+        <label for="cliente_cpf">CPF do Cliente:</label>
+        <input type="text" id="cliente_cpf" name="cliente_cpf" required>
+        <button type="submit">Cadastrar</button>
+    </form>
+    <a href="/">Voltar ao Menu Principal</a>
+</body>
+</html>

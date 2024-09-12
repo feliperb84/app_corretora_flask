@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consultar Apólices por Cliente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Consultar Apólices por Cliente</h1>
+    </header>
+    <form method="post">
+        <label for="cpf_cnpj">CPF/CNPJ do Cliente:</label>
+        <input type="text" id="cpf_cnpj" name="cpf_cnpj" required>
+        <button type="submit">Consultar</button>
+    </form>
+    <a href="/">Voltar ao Menu Principal</a>
+</body>
+</html>

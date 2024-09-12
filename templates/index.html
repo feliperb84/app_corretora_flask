@@ -1,0 +1,12 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+{% block content %}
+    <h1>Bem-vindo à Cia América Corretora de Seguros!</h1>
+    <ul>
+        <li><a href="/clientes/cadastrar">1. Cadastrar Cliente</a></li>
+        <li><a href="/apolices/cadastrar">2. Cadastrar Apólice</a></li>
+        <li><a href="/apolices/consulta/cliente">3. Consultar Apólices por Cliente (CPF/CNPJ)</a></li>
+        <li><a href="/apolices/consulta/vencimento">4. Relatório de Renovações (MM/AAAA)</a></li>
+        <li><a href="/sair">5. Sair</a></li>
+    </ul>
+{% endblock %}

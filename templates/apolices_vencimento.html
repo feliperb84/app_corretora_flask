@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apólices com Vencimento no Mês</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Apólices com Vencimento no Mês</h1>
+    </header>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Cliente</th>
+                <th>Número da Apólice</th>
+                <th>Tipo de Seguro</th>
+                <th>Data de Vencimento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for apolice in apolices %}
+            <tr>
+                <td>{{ apolice[0] }}</td>
+                <td>{{ apolice[1] }}</td>
+                <td>{{ apolice[2] }}</td>
+                <td>{{ apolice[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/">Voltar ao Menu Principal</a>
+</body>
+</html>
