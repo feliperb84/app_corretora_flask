@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, render_template
+import os
 import psycopg2
 import re
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -31,14 +33,16 @@ def validar_cnpj(cnpj):
         return False
     return True  # Aqui, a validação do CNPJ seria mais completa em um sistema real.
 
-# Configuração da conexão com o PostgreSQL
+# Carrega variáveis do .env
+load_dotenv()
+
 def criar_conexao():
     return psycopg2.connect(
-        host="dpg-crgvhlg8fa8c738q4llg-a",
-        user="america",
-        port="5432",
-        password="nJeyR6lzhd5kGBI7ALVKwv65NVG203t8",
-        database="dbamerica"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        port=os.getenv("DB_PORT")
     )
 
 # Página inicial com o menu principal
