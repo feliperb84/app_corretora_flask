@@ -104,6 +104,7 @@ def index():
         FROM apolices a
         JOIN clientes c ON a.cliente_id = c.id
         WHERE a.dt_vencimento BETWEEN %s AND %s
+        ORDER BY Dt_Vencimento ASC;
     """, (hoje, semana_futura))
     
     apolices_vencimento = cursor.fetchall()
