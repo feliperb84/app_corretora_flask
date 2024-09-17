@@ -1,0 +1,146 @@
+body {
+    font-family: arial, sans-serif;
+    background-image: url('/static/images/fundo.jpg');
+    background-color: rgba(255, 255, 255, 0.5);
+    background-size: cover;
+    background-position: center;
+    background-repeat: repeat;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 0px;
+    justify-content: space-between;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    background-color: #444444;
+    margin: 0;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 10px 10px;
+    display: inline-block;
+}
+
+nav ul i a:hover {
+    background-color: #555;
+}
+
+.container {
+    padding: 20px;
+    flex: 1;
+}
+
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 250px rgba(0, 0, 0, 0.15);
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+form input {
+    width: 97%;
+    padding: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    padding: 6px 13px;
+    background-color: #5cb85c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+}
+
+form button:hover {
+    background-color: #4cae4c;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.50);
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    block-size: 2%;
+    width: 100%;
+    bottom: 0;
+    margin-top: 20px;
+}
+
+footer p {
+    margin: 0; 
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background-color: #fff;
+}
+
+table td input[type="text"],
+table td input[type="date"] {
+    width: 100%;
+    padding: 5px;
+    margin: 0px;
+    box-sizing: border-box;
+}
+
+td button {
+    padding: 5px 10px;
+}
+
+table,
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 3px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th,
+td {
+    padding: 5px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+th {
+    background-color: #f4f4f4;
+}

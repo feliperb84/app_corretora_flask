@@ -1,33 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
+
 <head>
+    <meta charset="UTF-8">
     <title>Consulta de Apólices</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
+    <script>
+        function confirmarExclusaoCliente() {
+            return confirm("Tem certeza de que deseja excluir este cliente e todas as apólices associadas?");
+        }
+
+        function confirmarExclusaoApolice() {
+            return confirm("Tem certeza de que deseja excluir esta apólice?");
+        }
+    </script>
 </head>
-<body>
+<!-- Mostrar dados do cliente -->
+<header>
+    <h2>Cadastro de: {{ cliente[1] }}</h2>
+</header>
+
+<div class="container">
+
+    <form action="{{ url_for('alterar_cliente', id=cliente[0]) }}" method="POST">
+        <p><strong>Nome:</strong> <input type="text" name="nome" value="{{ cliente[1] }}"></p>
+        <p><strong>CPF/CNPJ:</strong> <input type="text" name="cpf_cnpj" value="{{ cliente[2] }}"></p>
+        <p><strong>Telefone:</strong> <input type="text" name="telefone" value="{{ cliente[3] }}"></p>
+        <p><strong>Email:</strong> <input type="email" name="email" value="{{ cliente[4] }}"></p>
+
+        <!-- Botão para salvar alterações no cliente -->
+        <center>
+            <button type="submit">Salvar Alterações feitas em {{ cliente[1] }}</button>
+            <a href="/apolices/cadastrar" class="new-consult-button">Incluir nova Apólice</a>
+        </center>
+    </form>
+
+    <!-- Botão para excluir o cliente e suas apólices com confirmação -->
+    <form action="{{ url_for('excluir_cliente', id=cliente[0]) }}" method="POST"
+        onsubmit="return confirmarExclusaoCliente();">
+        <center>
+
+            <button type="submit" class="del-button">Excluir {{ cliente[1] }} e todas as Apólices</button>
+
+        </center>
+    </form>
+</div>
+<div class="container">
+    <!-- Mostrar apólices do cliente -->
     <header>
-        <h1>Apólices de {{ cliente[1] }}</h1>
+        <h2>Apólices cadastradas</h2>
     </header>
+
     <table>
         <thead>
             <tr>
+                <th>Data de Vencimento</th>
                 <th>Número da Apólice</th>
                 <th>Tipo de Seguro</th>
-                <th>Data de Vencimento</th>
                 <th>Seguradora</th>
+                <th>Salvar alteração</th>
+                <th>Apagar apólice</th>
             </tr>
         </thead>
         <tbody>
             {% for apolice in apolices %}
             <tr>
-                <td>{{ apolice[0] }}</td>
-                <td>{{ apolice[1] }}</td>
-                <td>{{ apolice[2] }}</td>
-                <td>{{ apolice[3] }}</td>
+                <!-- Formulário para edição de apólices -->
+                <form action="{{ url_for('alterar_apolice', nr_apolice=apolice[1]) }}" method="POST">
+                    <td><input type="date" name="dt_vencimento" value="{{ apolice[0] }}"></td>
+                    <td>{{ apolice[1] }}</td>
+                    <td><input type="text" name="tipo_seguro" value="{{ apolice[2] }}"></td>
+                    <td><input type="text" name="seguradora" value="{{ apolice[3] }}"></td>
+                    <td>
+                        <!-- Botão para salvar alterações na apólice -->
+                        <button type="submit" class="save-button">Salvar Apólice</button>
+                    </td>
+                </form>
+                <!-- Formulário para excluir apólice com confirmação -->
+                <form action="{{ url_for('excluir_apolice', nr_apolice=apolice[1]) }}" method="POST"
+                    onsubmit="return confirmarExclusaoApolice();">
+                    <td>
+                        <button type="submit" class="del-button">Excluir Apólice</button>
+                    </td>
+                </form>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="/">Voltar ao Menu Principal</a>
+</div>
+<div class="container">
+    <form>
+        <center>
+            <a href="/" class="back-button">Voltar ao Menu</a>
+            <a href="/apolices/consulta/cliente" class="new-consult-button">Consultar Cliente</a>
+        </center>
+    </form>
+</div>
+
+
 </body>
+
 </html>

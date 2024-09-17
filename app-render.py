@@ -1,10 +1,39 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, url_for,redirect, session, flash
 import os
 import psycopg2
 import re
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta_aqui'  # Troque por uma chave segura!  inicio implementação de login
+
+# Usuário e senha para login (pode mudar para buscar do banco de dados, se preferir)
+ADMIN_USERNAME = 'admin'
+ADMIN_PASSWORD = 'senha123'
+
+# Rota para o login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form['username'] == ADMIN_USERNAME and request.form['password'] == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            flash('Login realizado com sucesso!', 'success')
+            return redirect(url_for('index'))  # Redireciona para a dashboard
+        else:
+            flash('Usuário ou senha incorretos.', 'danger')
+    return render_template('login.html')
+
+# Rota para logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Você saiu da conta.', 'info')
+    return redirect(url_for('login'))
+
+
+#final da implementação de login
 
 # Função para validar CPF/CNPJ
 def validar_cpf_cnpj(cpf_cnpj):
@@ -36,6 +65,7 @@ def validar_cnpj(cnpj):
 # Carrega variáveis do .env
 load_dotenv()
 
+# Configuração da conexão com o PostgreSQL
 def criar_conexao():
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),
@@ -45,27 +75,71 @@ def criar_conexao():
         port=os.getenv("DB_PORT")
     )
 
-# Página inicial com o menu principal
+# inicio 2° teste dashboard
 @app.route('/')
 def index():
-    return '''
-    <h1>Bem-vindo à Cia América Corretora de Seguros!</h1>
-    <ul>
-        <li><a href="/clientes/cadastrar">1. Cadastrar Cliente</a></li>
-        <li><a href="/apolices/cadastrar">2. Cadastrar Apólice</a></li>
-        <li><a href="/apolices/consulta/cliente">3. Consultar Apólices por Cliente (CPF/CNPJ)</a></li>
-        <li><a href="/apolices/consulta/vencimento">4. Relatório de Renovações (MM/AAAA)</a></li>
-        <li><a href="/sair">5. Sair</a></li>
-    </ul>
-    '''
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    
+    hoje = datetime.today()
+
+    # Conexão com o banco de dados
+    conn = criar_conexao()
+    cursor = conn.cursor()
+
+    # Consulta para contar o total de clientes
+    cursor.execute("SELECT COUNT(*) FROM clientes")
+    total_clientes = cursor.fetchone()[0]
+
+    # Consulta para contar o total de apólices
+    cursor.execute("SELECT COUNT(*) FROM apolices WHERE dt_vencimento >= %s", (hoje,))
+    total_apolices = cursor.fetchone()[0]
+
+    # Calculando apólices que vencem na semana
+    semana_futura = hoje + timedelta(days=7)
+
+    # Consulta para obter as apólices que vencem na próxima semana
+    cursor.execute("""
+        SELECT a.dt_vencimento, c.nome, a.tipo_seguro, a.seguradora 
+        FROM apolices a
+        JOIN clientes c ON a.cliente_id = c.id
+        WHERE a.dt_vencimento BETWEEN %s AND %s
+    """, (hoje, semana_futura))
+    
+    apolices_vencimento = cursor.fetchall()
+
+    # Preparando os dados formatados para exibição
+    apolices_formatadas = []
+    for apolice in apolices_vencimento:
+        data_vencimento, cliente_nome, tipo_seguro, seguradora_nome = apolice
+        
+        # Extraindo primeiro nome de cliente e seguradora
+        cliente_primeiro_nome = cliente_nome.split(' ')[0]
+        seguradora_primeiro_nome = seguradora_nome.split(' ')[0]
+        
+        # Adicionando apólice formatada à lista
+        apolices_formatadas.append({
+            'data_vencimento': data_vencimento.strftime('%d/%m'),  # Formatando a data
+            'cliente_nome': cliente_primeiro_nome,
+            'tipo_seguro': tipo_seguro,
+            'seguradora_nome': seguradora_primeiro_nome
+        })
+
+    # Fechando conexão
+    cursor.close()
+    conn.close()
+
+    # Renderizando a página com os dados
+    return render_template('index.html', 
+                        total_clientes=total_clientes, 
+                        total_apolices=total_apolices, 
+                        apolices_vencimento=apolices_formatadas)
+#final 2° teste dash
 
 # Rota para sair
 @app.route('/sair')
 def sair():
-    return '''
-    <h1>Obrigado por utilizar o sistema!</h1>
-    <a href="/">Voltar ao Menu</a>
-    '''
+    return render_template('sair.html')
 
 # Verificar se cliente já existe
 def verificar_cliente_existente(cpf_cnpj):
@@ -87,17 +161,16 @@ def verificar_apolice_existente(nr_apolice):
     conexao.close()
     return apolice
 
-# Rota para cadastrar clientes
+# Rota para cadastrar cliente
 @app.route('/clientes/cadastrar', methods=['GET', 'POST'])
 def cadastrar_cliente():
     if request.method == 'POST':
-        dados = request.form
-        nome = dados['nome'].upper()
-        cpf_cnpj = dados['cpf_cnpj']
-        telefone = dados['telefone'].upper()
-        email = dados['email'].upper()
+        nome = request.form['nome'].upper()
+        cpf_cnpj = request.form['cpf_cnpj']
+        telefone = request.form['telefone'].upper()
+        email = request.form['email'].upper()
 
-        # Verificação de campos obrigatórios
+# Verificação de campos obrigatórios
         if not nome or not cpf_cnpj:
             return '''
             <h2>O campo Nome e CPF/CNPJ são obrigatórios.</h2>
@@ -106,20 +179,13 @@ def cadastrar_cliente():
 
         # Validação do CPF/CNPJ
         if not validar_cpf_cnpj(cpf_cnpj):
-            return '''
-            <h2>CPF/CNPJ inválido. Por favor, insira um válido.</h2>
-            <a href="/clientes/cadastrar">Voltar</a>
-            '''
-
+            return render_template('erro_cpf_invalido.html')
+            
         # Verifica se o cliente já existe
         cliente_existente = verificar_cliente_existente(cpf_cnpj)
         if cliente_existente:
-            return f'''
-            <h2>O cliente {cliente_existente[1]} já está cadastrado com CPF/CNPJ {cpf_cnpj}.</h2>
-            <a href="/apolices/cadastrar">Cadastrar Apólice para {cliente_existente[1]}</a><br>
-            <a href="/">Voltar ao Menu</a>
-            '''
-        
+            return render_template('cliente_existe.html')
+
         # Cadastra novo cliente se não existir
         conexao = criar_conexao()
         cursor = conexao.cursor()
@@ -127,277 +193,209 @@ def cadastrar_cliente():
         cursor.execute(sql, (nome, cpf_cnpj, telefone, email))
         conexao.commit()
         conexao.close()
+        
+        return render_template('success.html', mensagem="Cliente cadastrado com sucesso!")
 
-        return '''
-        <h2>Cliente cadastrado com sucesso!</h2>
-        <a href="/">Voltar ao Menu</a>
-        '''
+    return render_template('cadastrar_cliente.html')
 
-    return '''
-    <h2>Cadastro de Cliente</h2>
-    <form method="POST">
-        Nome: <input type="text" name="nome"><br>
-        CPF/CNPJ: <input type="text" name="cpf_cnpj"><br>
-        Telefone: <input type="text" name="telefone"><br>
-        Email: <input type="text" name="email"><br>
-        <input type="submit" value="Cadastrar Cliente">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
-
-# Rota para cadastrar apólices
+# Rota para cadastrar apólice
 @app.route('/apolices/cadastrar', methods=['GET', 'POST'])
 def cadastrar_apolice():
     if request.method == 'POST':
-        dados = request.form
-        nr_apolice = dados['nr_apolice'].upper()
-        tipo_seguro = dados['tipo_seguro'].upper()
-        dt_vencimento = dados['dt_vencimento']
-        seguradora = dados['seguradora'].upper()
-        cliente_cpf = dados['cliente_cpf'].upper()
+        nr_apolice = request.form['nr_apolice'].upper()
+        tipo_seguro = request.form['tipo_seguro'].upper()
+        dt_vencimento = request.form['dt_vencimento']
+        seguradora = request.form['seguradora'].upper()
+        cliente_cpf = request.form['cliente_cpf'].upper()
 
-        # Verificação de campos obrigatórios
-        if not nr_apolice or not tipo_seguro or not dt_vencimento or not seguradora or not cliente_cpf:
-            return '''
-            <h2>Todos os campos são obrigatórios.</h2>
-            <a href="/apolices/cadastrar">Voltar</a>
-            '''
+        try:
+            conexao = criar_conexao()
+            cursor = conexao.cursor()
 
-        # Verifica se a apólice já existe
-        apolice_existente = verificar_apolice_existente(nr_apolice)
-        if apolice_existente:
-            return f'''
-            <h2>A apólice {nr_apolice} já está cadastrada no sistema.</h2>
-            <a href="/apolices/cadastrar">Cadastrar Nova Apólice</a><br>
-            <a href="/">Voltar ao Menu</a>
-            '''
+            # Primeiro, obtenha o ID do cliente com base no CPF fornecido
+            sql_cliente = "SELECT ID FROM Clientes WHERE CPF_CNPJ = %s"
+            cursor.execute(sql_cliente, (cliente_cpf,))
+            resultado = cursor.fetchone()
 
-        # Cadastra nova apólice se não existir
-        conexao = criar_conexao()
-        cursor = conexao.cursor()
-        sql = "INSERT INTO Apolices (NR_Apolice, Tipo_Seguro, Dt_Vencimento, Seguradora, Cliente_cpf) VALUES (%s, %s, %s, %s, %s)"
-        cursor.execute(sql, (nr_apolice, tipo_seguro, dt_vencimento, seguradora, cliente_cpf))
-        conexao.commit()
-        conexao.close()
+            if resultado:
+                cliente_id = resultado[0]
+                # Insira a apólice com o ID do cliente
+                sql_apolice = """
+                INSERT INTO Apolices (NR_Apolice, Tipo_Seguro, Dt_Vencimento, Seguradora, Cliente_ID)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(sql_apolice, (nr_apolice, tipo_seguro, dt_vencimento, seguradora, cliente_id))
+                conexao.commit()
+                return render_template('success.html', mensagem="Apólice cadastrada com sucesso!")
+            else:
+                return render_template('error.html', topmensagem="CPF ou CNPJ não localizado.", mensagem="Faça o cadastro do cliente primeiro", link=url_for('cadastrar_apolice'))
 
-        return '''
-        <h2>Apólice cadastrada com sucesso!</h2>
-        <a href="/">Voltar ao Menu</a>
-        '''
+        except Exception as e:
+            print(f"Erro ao cadastrar apólice: {e}")  # Loga o erro no console
+            if 'violates unique constraint' in str(e):
+                return render_template('error.html', topmensagem="Ops! Algo deu errado.", mensagem="A apólice já está cadastrada no sistema.")
+            else:
+                return render_template('error.html', topmensagem="Cadastro não foi concluído.", mensagem="Existe apólice com mesmo n° já cadastrada para este segurado.")
+            
+        finally:
+            conexao.close()
 
-    return '''
-    <h2>Cadastro de Apólice</h2>
-    <form method="POST">
-        Número da Apólice: <input type="text" name="nr_apolice"><br>
-        Tipo de Seguro: <input type="text" name="tipo_seguro"><br>
-        Data de Vencimento: <input type="date" name="dt_vencimento"><br>
-        Seguradora: <input type="text" name="seguradora"><br>
-        CPF do Cliente: <input type="text" name="cliente_cpf"><br>
-        <input type="submit" value="Cadastrar Apólice">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
+    return render_template('cadastrar_apolice.html')
 
-# Rota para consultar apólices de um cliente por CPF/CNPJ com opções de editar, excluir e cadastrar nova apólice
+# Rota para consultar apólices por cliente e permitir edição/exclusão
 @app.route('/apolices/consulta/cliente', methods=['GET', 'POST'])
-def consultar_apolices_por_cliente():
+def consulta_cliente():
     if request.method == 'POST':
         cpf_cnpj = request.form['cpf_cnpj']
 
         conexao = criar_conexao()
         cursor = conexao.cursor()
 
-        # Verificar se o cliente existe no banco de dados
+        # Obtém o ID e dados do cliente
         sql_cliente = "SELECT ID, Nome, CPF_CNPJ, Telefone, Email FROM Clientes WHERE CPF_CNPJ = %s"
         cursor.execute(sql_cliente, (cpf_cnpj,))
         cliente = cursor.fetchone()
 
-        if not cliente:
+        if cliente:
+            cliente_id = cliente[0]
+
+            # Obtém as apólices do cliente
+            sql_apolices = """
+            SELECT Dt_Vencimento, NR_Apolice, Tipo_Seguro, Seguradora
+            FROM Apolices
+            WHERE Cliente_ID = %s
+            ORDER BY Dt_Vencimento DESC;
+            """
+            cursor.execute(sql_apolices, (cliente_id,))
+            apolices = cursor.fetchall()
             conexao.close()
-            return f'''
-            <h2>O cliente com CPF/CNPJ {cpf_cnpj} não está cadastrado no sistema.</h2>
-            <a href="/clientes/cadastrar">Cadastrar Novo Cliente</a><br>
-            <a href="/">Voltar ao Menu</a>
-            '''
 
-        # Consultar as apólices associadas ao cliente
-        sql_apolices = """
-        SELECT Apolices.NR_Apolice, Apolices.Tipo_Seguro, Apolices.Dt_Vencimento, Apolices.Seguradora
-        FROM Apolices
-        WHERE Apolices.Cliente_ID = %s
-        """
-        cursor.execute(sql_apolices, (cliente[0],))
-        apolices = cursor.fetchall()
-        conexao.close()
+            # Renderiza a página passando dados do cliente e das apólices
+            return render_template('consulta_cliente.html', cliente=cliente, apolices=apolices)
 
-        resultado = f'''
-        <h2>Dados do Cliente</h2>
-        <p><b>Nome:</b> {cliente[1]}</p>
-        <p><b>CPF/CNPJ:</b> {cliente[2]}</p>
-        <p><b>Telefone:</b> {cliente[3]}</p>
-        <p><b>Email:</b> {cliente[4]}</p>
-        <a href="/clientes/editar/{cliente[0]}">Editar Cliente</a> |
-        <a href="/clientes/excluir/{cliente[0]}" onclick="return confirm('Tem certeza que deseja excluir este cliente?')">Excluir Cliente</a>
-        <hr>
-        <h2>Apólices</h2>
-        '''
-        
-        if apolices:
-            resultado += '<ul>'
-            for apolice in apolices:
-                resultado += f"""
-                <li>
-                <b>Número da Apólice:</b> {apolice[0]}<br>
-                <b>Tipo de Seguro:</b> {apolice[1]}<br>
-                <b>Data de Vencimento:</b> {apolice[2]}<br>
-                <b>Seguradora:</b> {apolice[3]}<br>
-                <a href="/apolices/editar/{apolice[0]}">Editar Apólice</a> |
-                <a href="/apolices/excluir/{apolice[0]}" onclick="return confirm('Tem certeza que deseja excluir esta apólice?')">Excluir Apólice</a>
-                </li><br>
-                """
-            resultado += '</ul>'
         else:
-            resultado += '<p>Nenhuma apólice encontrada para esse cliente.</p>'
+            conexao.close()
+            return render_template('error.html', topmensagem="CPF/CNPJ inexistente", mensagem="Cliente não encontrado.", link=url_for('consulta_cliente'))
 
-        # Adicionar a opção de cadastrar nova apólice para este cliente
-        resultado += f'''
-        <a href="/apolices/cadastrar?cliente_id={cliente[0]}">Cadastrar Nova Apólice para {cliente[1]}</a><br>
-        <a href="/">Voltar ao Menu</a>
-        '''
+    return render_template('consulta_cliente_form.html')
 
-        return resultado
+@app.route('/clientes/alterar/<int:id>', methods=['POST'])
+def alterar_cliente(id):
+    nome = request.form['nome'].upper()
+    cpf_cnpj = request.form['cpf_cnpj']
+    telefone = request.form['telefone'].upper()
+    email = request.form['email'].upper()
 
-    return '''
-    <h2>Consulta de Apólices por Cliente (CPF/CNPJ)</h2>
-    <form method="POST">
-        CPF/CNPJ do Cliente: <input type="text" name="cpf_cnpj"><br>
-        <input type="submit" value="Consultar Apólices">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
-
-
-# Rota para editar cliente
-@app.route('/clientes/editar/<int:id>', methods=['GET', 'POST'])
-def editar_cliente(id):
     conexao = criar_conexao()
     cursor = conexao.cursor()
 
-    if request.method == 'POST':
-        nome = request.form['nome'].upper()
-        cpf_cnpj = request.form['cpf_cnpj']
-        telefone = request.form['telefone'].upper()
-        email = request.form['email'].upper()
-
-        sql = "UPDATE Clientes SET Nome = %s, CPF_CNPJ = %s, Telefone = %s, Email = %s WHERE ID = %s"
+    try:
+        sql = """
+        UPDATE Clientes 
+        SET Nome = %s, CPF_CNPJ = %s, Telefone = %s, Email = %s 
+        WHERE ID = %s
+        """
         cursor.execute(sql, (nome, cpf_cnpj, telefone, email, id))
         conexao.commit()
+
+        return render_template('success.html', mensagem="Dados do cliente alterados com sucesso!")
+
+    except Exception as e:
+        conexao.rollback()
+        print(f"Erro ao alterar cliente: {e}")
+        return render_template('error.html', mensagem="Erro ao alterar dados do cliente.")
+
+    finally:
         conexao.close()
 
-        return f'<h2>Cliente atualizado com sucesso!</h2><a href="/">Voltar ao Menu</a>'
-    
-    # Exibe o formulário com os dados atuais
-    sql_cliente = "SELECT Nome, CPF_CNPJ, Telefone, Email FROM Clientes WHERE ID = %s"
-    cursor.execute(sql_cliente, (id,))
-    cliente = cursor.fetchone()
-    conexao.close()
+@app.route('/apolices/alterar/<nr_apolice>', methods=['POST'])
+def alterar_apolice(nr_apolice):
+    dt_vencimento = request.form['dt_vencimento']
+    tipo_seguro = request.form['tipo_seguro'].upper()
+    seguradora = request.form['seguradora'].upper()
 
-    return f'''
-    <h2>Editar Cliente</h2>
-    <form method="POST">
-        Nome: <input type="text" name="nome" value="{cliente[0]}"><br>
-        CPF/CNPJ: <input type="text" name="cpf_cnpj" value="{cliente[1]}"><br>
-        Telefone: <input type="text" name="telefone" value="{cliente[2]}"><br>
-        Email: <input type="text" name="email" value="{cliente[3]}"><br>
-        <input type="submit" value="Salvar">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
+    conexao = criar_conexao()
+    cursor = conexao.cursor()
 
-# Rota para excluir cliente
-@app.route('/clientes/excluir/<int:id>', methods=['GET'])
+    try:
+        sql = """
+        UPDATE Apolices
+        SET Dt_Vencimento = %s, Tipo_Seguro = %s, Seguradora = %s
+        WHERE NR_Apolice = %s
+        """
+        cursor.execute(sql, (dt_vencimento, tipo_seguro, seguradora, nr_apolice))
+        conexao.commit()
+
+        return render_template('success.html', mensagem="Apólice alterada com sucesso!")
+
+    except Exception as e:
+        conexao.rollback()
+        print(f"Erro ao alterar apólice: {e}")
+        return render_template('error.html', mensagem="Erro ao alterar apólice.")
+
+    finally:
+        conexao.close()
+
+# Rota para excluir cliente e todas as apólices associadas
+@app.route('/clientes/excluir/<int:id>', methods=['POST'])
 def excluir_cliente(id):
     conexao = criar_conexao()
     cursor = conexao.cursor()
 
-    sql_apolices = "DELETE FROM Apolices WHERE Cliente_ID = %s"
-    cursor.execute(sql_apolices, (id,))
-    
-    sql_cliente = "DELETE FROM Clientes WHERE ID = %s"
-    cursor.execute(sql_cliente, (id,))
-    
-    conexao.commit()
-    conexao.close()
+    try:
+        # Excluindo apólices associadas ao cliente
+        sql_apolices = "DELETE FROM Apolices WHERE Cliente_ID = %s"
+        cursor.execute(sql_apolices, (id,))
 
-    return f'<h2>Cliente e apólices excluídos com sucesso!</h2><a href="/">Voltar ao Menu</a>'
+        # Excluindo o cliente
+        sql_cliente = "DELETE FROM Clientes WHERE ID = %s"
+        cursor.execute(sql_cliente, (id,))
 
-# Rota para editar apólice
-@app.route('/apolices/editar/<nr_apolice>', methods=['GET', 'POST'])
-def editar_apolice(nr_apolice):
-    conexao = criar_conexao()
-    cursor = conexao.cursor()
-
-    if request.method == 'POST':
-        novo_nr_apolice = request.form['nr_apolice'].upper()
-        tipo_seguro = request.form['tipo_seguro'].upper()
-        dt_vencimento = request.form['dt_vencimento']
-        seguradora = request.form['seguradora'].upper()
-
-        # Atualiza a apólice, incluindo o número
-        sql = """
-        UPDATE Apolices 
-        SET NR_Apolice = %s, Tipo_Seguro = %s, Dt_Vencimento = %s, Seguradora = %s 
-        WHERE NR_Apolice = %s
-        """
-        cursor.execute(sql, (novo_nr_apolice, tipo_seguro, dt_vencimento, seguradora, nr_apolice))
         conexao.commit()
+        return render_template('success.html', mensagem="Cliente e apólices excluídos com sucesso!")
+
+    except Exception as e:
+        conexao.rollback()
+        print(f"Erro ao excluir cliente: {e}")
+        return render_template('error.html', mensagem="Erro ao excluir cliente e apólices.")
+
+    finally:
         conexao.close()
 
-        return f'<h2>Apólice atualizada com sucesso!</h2><a href="/">Voltar ao Menu</a>'
-    
-    # Exibe o formulário com os dados atuais da apólice
-    sql_apolice = "SELECT NR_Apolice, Tipo_Seguro, Dt_Vencimento, Seguradora FROM Apolices WHERE NR_Apolice = %s"
-    cursor.execute(sql_apolice, (nr_apolice,))
-    apolice = cursor.fetchone()
-    conexao.close()
-
-    return f'''
-    <h2>Editar Apólice</h2>
-    <form method="POST">
-        Número da Apólice: <input type="text" name="nr_apolice" value="{apolice[0]}"><br>
-        Tipo de Seguro: <input type="text" name="tipo_seguro" value="{apolice[1]}"><br>
-        Data de Vencimento: <input type="date" name="dt_vencimento" value="{apolice[2]}"><br>
-        Seguradora: <input type="text" name="seguradora" value="{apolice[3]}"><br>
-        <input type="submit" value="Salvar">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
-
-
-# Rota para excluir apólice
-@app.route('/apolices/excluir/<nr_apolice>', methods=['GET'])
+# Rota para excluir apólice individualmente
+@app.route('/apolices/excluir/<nr_apolice>', methods=['POST'])
 def excluir_apolice(nr_apolice):
     conexao = criar_conexao()
     cursor = conexao.cursor()
 
-    sql = "DELETE FROM Apolices WHERE NR_Apolice = %s"
-    cursor.execute(sql, (nr_apolice,))
-    conexao.commit()
-    conexao.close()
+    try:
+        sql = "DELETE FROM Apolices WHERE NR_Apolice = %s"
+        cursor.execute(sql, (nr_apolice,))
 
-    return f'<h2>Apólice excluída com sucesso!</h2><a href="/">Voltar ao Menu</a>'
+        conexao.commit()
+        return render_template('success.html', mensagem="Apólice excluída com sucesso!")
 
-# Rota para consultar apólices com vencimento em um mês específico
-@app.route('/apolices/consulta/vencimento', methods=['GET', 'POST'])
-def consultar_apolices_vencimento_mes():
+    except Exception as e:
+        conexao.rollback()
+        print(f"Erro ao excluir apólice: {e}")
+        return render_template('error.html', mensagem="Erro ao excluir apólice.")
+
+    finally:
+        conexao.close()
+
+# Rota para consultar apólices com vencimento no mês atual
+@app.route('/apolices/vencimento', methods=['GET', 'POST'])
+def apolices_vencimento():
     if request.method == 'POST':
+        # O usuário enviou o formulário com mês e ano
         mes = request.form['mes']
         ano = request.form['ano']
-
+        
+        # Consulta no banco de dados
         conexao = criar_conexao()
         cursor = conexao.cursor()
         sql = """
-        SELECT Clientes.Nome, Apolices.NR_Apolice, Apolices.Tipo_Seguro, Apolices.Dt_Vencimento, Apolices.Seguradora
+        SELECT Apolices.Dt_Vencimento, Clientes.Nome, Apolices.Tipo_Seguro, Apolices.Seguradora, Apolices.NR_Apolice  
         FROM Apolices
         JOIN Clientes ON Apolices.Cliente_ID = Clientes.ID
         WHERE EXTRACT(MONTH FROM Apolices.Dt_Vencimento) = %s
@@ -408,66 +406,14 @@ def consultar_apolices_vencimento_mes():
         apolices = cursor.fetchall()
         conexao.close()
 
-        if apolices:
-            # Formatando o título com mês e ano
-            resultado = f'<h2>Renovações de {mes}/{ano}</h2>'
-            
-            # Criando a tabela com os cabeçalhos
-            resultado += '''
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Data de Vencimento</th>
-                        <th>Nome do Cliente</th>
-                        <th>Tipo de Seguro</th>
-                        <th>Seguradora</th>
-                        <th>Número da Apólice</th>
-                    </tr>
-                </thead>
-                <tbody>
-            '''
-            
-            # Preenchendo a tabela com os dados das apólices
-            for apolice in apolices:
-                resultado += f'''
-                <tr>
-                    <td>{apolice[3].strftime('%d/%m/%Y')}</td>
-                    <td>{apolice[0]}</td>
-                    <td>{apolice[2]}</td>
-                    <td>{apolice[4]}</td>
-                    <td>{apolice[1]}</td>
-                </tr>
-                '''
-            
-            # Fechando a tabela
-            resultado += '''
-                </tbody>
-            </table>
-            '''
-            
-            # Botão para imprimir o relatório
-            resultado += '''
-            <br>
-            <button onclick="window.print()">Imprimir Relatório</button>
-            <br>
-            <a href="/">Voltar ao Menu</a>
-            '''
-            return resultado
-        else:
-            return '''
-            <h2>Nenhuma apólice encontrada com vencimento nesse mês/ano.</h2>
-            <a href="/">Voltar ao Menu</a>
-            '''
+        # Exibe o template com a tabela de apólices
+        return render_template('apolices_vencimento.html', apolices=apolices)
 
-    return '''
-    <h2>Consulta de Apólices com Vencimento em um Mês</h2>
-    <form method="POST">
-        Mês: <input type="text" name="mes"><br>
-        Ano: <input type="text" name="ano"><br>
-        <input type="submit" value="Consultar Apólices">
-    </form>
-    <a href="/">Voltar ao Menu</a>
-    '''
+    # Se for uma requisição GET, mostre o formulário para escolher mês/ano
+    return render_template('consulta_apolices_form.html')
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     app.run(debug=True)
+
+#_____________até aqui código revisado e funcionando 

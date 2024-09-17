@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Consultar Apólices por Cliente</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
 <body>
     <header>
@@ -11,8 +12,11 @@
     <form method="post">
         <label for="cpf_cnpj">CPF/CNPJ do Cliente:</label>
         <input type="text" id="cpf_cnpj" name="cpf_cnpj" required>
-        <button type="submit">Consultar</button>
+        <center><button type="submit">Consultar</button></center>
     </form>
-    <a href="/">Voltar ao Menu Principal</a>
+    <form>
+        <center><a href="/" class="back-button">Voltar ao Menu</a></center>
+    </form>
+    
 </body>
 </html>

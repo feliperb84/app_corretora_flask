@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Sucesso</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
+
 <body>
     <header>
         <h1>Sucesso</h1>
     </header>
-    <p>{{ mensagem }}</p>
-    <a href="/">Voltar ao Menu Principal</a>
+    <form>
+        <center>
+            <label>
+                <h1 style="color: red;">{{ mensagem }}</h1>
+            </label>
+            <a href="/clientes/cadastrar" class="new-cliente-button">Novo Cliente</a>
+            <a href="/apolices/consulta/cliente" class="new-consult-button">Consultar Cliente</a>
+            <a href="/apolices/cadastrar" class="new-apol-button">Nova Apólice</a>
+        </center>
+    </form>
+    <form>
+        <center><a href="/" class="back-button">Voltar ao Menu</a></center>
+    </form>
+    
 </body>
+
 </html>

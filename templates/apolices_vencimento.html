@@ -1,33 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
+
 <head>
-    <title>Apólices com Vencimento no Mês</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta charset="UTF-8">
+    <title>Renovações de Apólices</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
+
 <body>
     <header>
-        <h1>Apólices com Vencimento no Mês</h1>
+        <h2>Apólices com Vencimento no Mês</h2>
     </header>
-    <table>
-        <thead>
-            <tr>
-                <th>Nome do Cliente</th>
-                <th>Número da Apólice</th>
-                <th>Tipo de Seguro</th>
-                <th>Data de Vencimento</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for apolice in apolices %}
-            <tr>
-                <td>{{ apolice[0] }}</td>
-                <td>{{ apolice[1] }}</td>
-                <td>{{ apolice[2] }}</td>
-                <td>{{ apolice[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/">Voltar ao Menu Principal</a>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vencimento</th>
+                    <th>Segurado</th>
+                    <th>Ramo</th>
+                    <th>Seguradora</th>
+                    <th>N° Apólice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for apolice in apolices %}
+                <tr>
+                    <td>{{ apolice[0].strftime('%d/%m/%Y') }}</td>
+                    <td>{{ apolice[1] }}</td>
+                    <td>{{ apolice[2] }}</td>
+                    <td>{{ apolice[3] }}</td>
+                    <td>{{ apolice[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <form>
+        <center>
+            <a href="/" class="back-button">Voltar ao Menu</a>
+            <a href="/apolices/vencimento" class="new-search-button">Nova Consulta</a>
+            <a href="#" onclick="window.print(); return false;" class="print-button">Imprimir Relatório</a>
+        </center>
+    </form>
 </body>
+
 </html>

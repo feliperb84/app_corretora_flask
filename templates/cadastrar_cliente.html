@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Cadastrar Cliente</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Cadastrar Apólice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
+
 <body>
     <header>
-        <h1>Cadastrar Cliente</h1>
+        <h1>Cadastro de Cliente</h1>
     </header>
     <form method="post">
         <label for="nome">Nome:</label>
@@ -16,9 +19,13 @@
         <label for="telefone">Telefone:</label>
         <input type="text" id="telefone" name="telefone">
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email">
-        <button type="submit">Cadastrar</button>
+        <input type="text" id="email" name="email">
+        <center><button type="submit">Cadastrar Cliente</button></center>
     </form>
-    <a href="/">Voltar ao Menu Principal</a>
+    <form>
+        <center><a href="/" class="back-button">Voltar ao Menu</a></center>
+    </form>
+    
 </body>
+
 </html>

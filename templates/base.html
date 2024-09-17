@@ -1,14 +1,36 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cia América Corretora</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>{% block title %} Cia América Corretora de Seguros {% endblock %}</title>
 </head>
+
 <body>
+    <header>
+        <div class="logo">
+            <img src="/static/images/tlogo.png" alt="Logo da Cia América" class="logo-img">
+        </div>
+        
+        <h1>Gerenciador de Carteira</h1>
+        <nav>
+            <ul>
+                <li><a href="/" class="back-button">Início</a></li>
+                <li><a href="/clientes/cadastrar">Novo Cliente</a></li>
+                <li><a href="/apolices/cadastrar">Nova Apólice</a></li>
+                <li><a href="/apolices/consulta/cliente">Consultar Cliente / Apólice</a></li>
+                <li><a href="/apolices/vencimento">Relatório de Renovações</a></li>
+                <li><a href="/sair">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
     <div class="container">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
+    
 </body>
+
 </html>

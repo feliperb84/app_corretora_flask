@@ -1,12 +1,38 @@
 <!-- templates/index.html -->
 {% extends "base.html" %}
 {% block content %}
-    <h1>Bem-vindo à Cia América Corretora de Seguros!</h1>
-    <ul>
-        <li><a href="/clientes/cadastrar">1. Cadastrar Cliente</a></li>
-        <li><a href="/apolices/cadastrar">2. Cadastrar Apólice</a></li>
-        <li><a href="/apolices/consulta/cliente">3. Consultar Apólices por Cliente (CPF/CNPJ)</a></li>
-        <li><a href="/apolices/consulta/vencimento">4. Relatório de Renovações (MM/AAAA)</a></li>
-        <li><a href="/sair">5. Sair</a></li>
-    </ul>
+<div class="dashboard-container">
+    <div class="card">
+        <p>{{ total_clientes }}</p>
+        <h2>Clientes Cadastrados</h2>
+    </div>
+    <div class="card">
+        <p>{{ total_apolices }}</p>
+        <h2>Apólices Ativas</h2>
+    </div>
+</div>
+
+<div class="card-list">
+    <h2>Renovações da semana</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Vence dia</th>
+                <th>Segurado</th>
+                <th>Ramo</th>
+                <th>Seguradora</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for apolice in apolices_vencimento %}
+            <tr>
+                <td>{{ apolice.data_vencimento }}</td>
+                <td>{{ apolice.cliente_nome.upper() }}</td>
+                <td>{{ apolice.tipo_seguro.upper() }}</td>
+                <td>{{ apolice.seguradora_nome.upper() }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

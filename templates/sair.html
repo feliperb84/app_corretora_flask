@@ -2,16 +2,26 @@
 <html>
 <head>
     <title>Sair</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
 <body>
     <header>
-        <h1>Obrigado por usar o sistema!</h1>
+        <h1>LOGOUT!</h1>
     </header>
     <nav>
         <ul>
-            <li><a href="/">Voltar ao Menu Principal</a></li>
         </ul>
     </nav>
 </body>
+    <form>
+        <center>
+            <h1>Deseja realmente sair do sistema?</h1>
+            <a href="/" class="back-button">Voltar ao menu</a>
+            <a href="/logout" class="exit-button">Sim, Sair do Sistema</a>
+        </center>
+    </form>
+<footer>
+    <p>&copy; 2024 Cia América Corretora de Seguros. Todos os direitos reservados.</p>
+</footer>
 </html>
