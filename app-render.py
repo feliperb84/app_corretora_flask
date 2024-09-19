@@ -7,7 +7,13 @@ from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_aqui'  # Troque por uma chave segura!  inicio implementação de login
+app.config['SECRET_KEY'] = os.urandom(24)  #inicio implementação de login
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
+# Sessão não persistente
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 # Usuário e senha para login (pode mudar para buscar do banco de dados, se preferir)
 ADMIN_USERNAME = 'admin'
