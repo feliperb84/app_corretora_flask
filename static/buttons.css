@@ -1,6 +1,7 @@
+/* Botão de Voltar */
 .back-button {
     padding: 6px 13px;
-    background-color:mediumblue;
+    background-color: mediumblue;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -14,6 +15,7 @@
     background-color: rgb(0, 0, 172);
 }
 
+/* Botões de Deletar e Sair */
 .del-button,
 .exit-button {
     padding: 6px 13px;
@@ -32,22 +34,24 @@
     background-color: #c02020;
 }
 
+/* Botão de Imprimir */
 .print-button {
     padding: 6px 13px;
-    background-color:darkorange;
+    background-color: darkorange;
     color: #fff;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    font-size: 15px;    
+    font-size: 15px;
 }
 
 .print-button:hover {
     background-color: rgb(207, 114, 0);
 }
 
+/* Botões Gerais */
 .new-apol-button,
 .new-cliente-button,
 .new-consult-button,
@@ -72,3 +76,52 @@
     background-color: #4cae4c;
 }
 
+/* Responsividade para telas menores */
+
+/* Para telas até 480px */
+@media (max-width: 480px) {
+    .back-button, 
+    .del-button, 
+    .exit-button, 
+    .print-button, 
+    .new-apol-button, 
+    .new-cliente-button, 
+    .new-consult-button, 
+    .new-search-button, 
+    .save-button {
+        font-size: 12px; /* Diminui o tamanho da fonte */
+        padding: 4px 10px; /* Reduz o padding */
+    }
+}
+
+/* Para telas até 768px */
+@media (max-width: 768px) {
+    .back-button, 
+    .del-button, 
+    .exit-button, 
+    .print-button, 
+    .new-apol-button, 
+    .new-cliente-button, 
+    .new-consult-button, 
+    .new-search-button, 
+    .save-button {
+        font-size: 13px; /* Ajusta o tamanho da fonte */
+        padding: 5px 11px; /* Ajusta o padding */
+    }
+}
+
+/* Para telas até 1024px */
+@media (max-width: 1024px) {
+    .back-button, 
+    .del-button, 
+    .exit-button, 
+    .print-button, 
+    .new-apol-button, 
+    .new-cliente-button, 
+    .new-consult-button, 
+    .new-search-button, 
+    .save-button {
+        font-size: 14px; /* Um leve ajuste no tamanho da fonte */
+        padding: 6px 12px; /* Mantém o padding proporcional */
+    }
+}
