@@ -1,25 +1,36 @@
+/* Estilos globais */
 body {
     font-family: arial, sans-serif;
     background-image: url('/static/images/fundo.jpg');
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(0, 0, 0, 0.2);
+    background-blend-mode: overlay;
     background-size: cover;
     background-position: center;
-    background-repeat: repeat;
-    height: 100vh;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    padding-bottom: 0px;
-    justify-content: space-between;
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    
 }
 
+html, body {
+    height: 100%;
+}
+
+/* Header */
 header {
     background-color: #333;
     color: #fff;
-    padding: 10px 0;
+    padding: 14px 0;
     text-align: center;
+    position: relative;
+    z-index: 10;
 }
 
+/* Navegação */
 nav ul {
     list-style: none;
     padding: 0;
@@ -41,22 +52,26 @@ nav ul li a {
     display: inline-block;
 }
 
-nav ul i a:hover {
+nav ul li a:hover {
     background-color: #555;
 }
 
+/* Conteúdo principal */
 .container {
     padding: 20px;
-    flex: 1;
+    
 }
 
+/* Formulário */
 form {
-    max-width: 600px;
+    width: 85%;
+    max-width: 500px;
     margin: 20px auto;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 0 250px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+    transition: max-width 0.3s ease;
 }
 
 form label {
@@ -80,8 +95,6 @@ form button {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
     font-size: 15px;
 }
 
@@ -89,23 +102,25 @@ form button:hover {
     background-color: #4cae4c;
 }
 
+/* Rodapé */
 footer {
-    background-color: #333;
+    background-color: rgba(0, 0, 0, 0.5);
     color: #fff;
-    background-color: rgba(0, 0, 0, 0.50);
     text-align: center;
     padding: 10px 0;
-    position: fixed;
-    block-size: 2%;
     width: 100%;
-    bottom: 0;
+    position: fixed;
     margin-top: 20px;
+    margin-left: 0px;
+    bottom: 0; 
+    align-content: space-around;   
 }
 
 footer p {
-    margin: 0; 
+    margin: 0;
 }
 
+/* Tabela */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -125,17 +140,14 @@ td button {
     padding: 5px 10px;
 }
 
-table,
-th,
-td {
+table, th, td {
     border: 1px solid #ddd;
     padding: 3px;
     text-align: left;
     vertical-align: middle;
 }
 
-th,
-td {
+th, td {
     padding: 5px;
     text-align: center;
     line-height: 1.2;
@@ -143,4 +155,85 @@ td {
 
 th {
     background-color: #f4f4f4;
+}
+
+/* Media Queries para responsividade */
+
+/* Resolução até 480px */
+@media screen and (max-width: 480px) {
+    .container {
+        padding: auto;
+
+    }
+    
+    body {
+        padding: 10px;
+        background-size:cover; /* Ajusta o tamanho do fundo */
+    }
+
+    header {
+        padding: 15px 0;
+        font-size: 1.0em; /* Reduz o tamanho do texto do header */
+    }
+
+    nav ul li {
+        font-size: 1.0rem;
+        display: block;
+        margin: 5px 0; /* Muda o menu para vertical */
+    }
+
+    form {
+        width: 80%;
+        max-width: 500px;
+        position: sticky;
+        
+    }
+
+    table {
+        font-size: 0.9em;
+        overflow-x: scroll; /* Permite rolagem horizontal na tabela */
+    }
+    footer {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Resolução até 768px */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 0px;
+    }
+
+    header {
+        padding: 8px 0;
+        font-size: 1.4em;
+    }
+
+    nav ul li {
+        font-size: 0.7rem;
+    }
+
+    form {
+        width: 70%;
+        max-width: 600px;
+    }
+
+    table td input[type="text"],
+    table td input[type="date"] {
+        font-size: 0.5em;
+    }
+}
+
+/* Resolução até 1024px */
+@media screen and (max-width: 1024px) {
+    form {
+        width: 80%;
+        max-width: 700px;
+    }
+
+    table td input[type="text"],
+    table td input[type="date"] {
+        font-size: 0.9em;
+    }
 }
