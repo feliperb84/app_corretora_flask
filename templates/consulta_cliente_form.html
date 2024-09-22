@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Consultar Apólices por Cliente</title>
+    <title>Consultar Cliente e Apólices</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
 </head>
 <body>
     <header>
-        <h1>Consultar Apólices por Cliente</h1>
+        <h1>Buscar Segurado</h1>
     </header>
     <form method="post">
-        <label for="cpf_cnpj">CPF/CNPJ do Cliente:</label>
+        <label for="cpf_cnpj">CPF/CNPJ do Segurado:</label>
         <input type="text" id="cpf_cnpj" name="cpf_cnpj" required>
         <center><button type="submit">Consultar</button></center>
     </form>
